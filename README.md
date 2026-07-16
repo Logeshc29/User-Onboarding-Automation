@@ -1,29 +1,35 @@
 # User Onboarding Automation
 
+## Architecture
+
+Architecture.png
+
 ## Overview
 
-Automates employee onboarding using:
+This project automates user onboarding using:
 
 - ServiceDesk Plus (SDP)
 - Power Automate
 - Azure Automation Runbook
 - Microsoft Graph API
 
-## Process Flow
+## Workflow
 
 1. User onboarding request raised in SDP.
-2. Approval completed.
-3. Power Automate triggers Azure Runbook.
-4. Runbook creates M365 account.
-5. License assigned.
-6. Groups assigned.
+2. Ticket gets approved.
+3. Power Automate triggers Azure Automation Runbook.
+4. Runbook creates Microsoft 365 user.
+5. License assigned automatically.
+6. Security groups added.
 7. Welcome email sent.
-8. SDP ticket updated.
+8. SDP ticket updated with status.
 
-## Technologies Used
+## Repository Structure
 
-- Power Automate
-- Azure Automation
-- PowerShell
-- Microsoft Graph API
-- ServiceDesk Plus
+```text
+Runbooks/
+ └── Create-UserOnboarding.ps1
+
+Architecture.md
+Architecture.png
+README.md
