@@ -1,0 +1,81 @@
+param(
+    [string]$FirstName,
+    [string]$LastName,
+    [string]$DisplayName,
+    [string]$UserPrincipalName,
+    [string]$Department,
+    [string]$JobTitle,
+    [string]$ManagerEmail
+)
+
+try {
+
+    Connect-MgGraph -Identity
+
+    Write-Output "Connected to Microsoft Graph"
+
+    $PasswordProfile = @{
+        Password = "Temp@123456"
+        ForceChangePasswordNextSignIn = $true
+    }
+
+    $UserParams = @{
+        AccountEnabled    = $true
+        DisplayName       = $DisplayName
+        GivenName         = $FirstName
+        Surname           = $LastName
+        UserPrincipalName = $UserPrincipalName
+        MailNickname      = ($FirstName + $LastName)
+        Department        = $Department
+        JobTitle          = $JobTitle
+        PasswordProfile   = $PasswordProfile
+    }
+
+    $User = New-MgUser @UserParams
+
+    Write-Output "User Created : $($User.UserPrincipalName)"
+
+    # License Assignment
+
+    $LicenseSku = Get-MgSubscribedSku |
+                  Where-Object {
+                    $_.SkuPartNumber -eq "ENTERPRISEPACK"
+                  }
+
+    Set-MgUserLicense `
+        -UserId $User.Id `
+        -AddLicenses @{
+            SkuId = $LicenseSku.SkuId
+        } `
+        -RemoveLicenses @()
+
+    Write-Output "License Assigned"
+
+    # Add Security Group
+
+    $Group = Get-MgGroup -Filter "displayName eq 'Employees'"
+
+    New-MgGroupMember `
+        -GroupId $Group.Id `
+        -DirectoryObjectId $User.Id
+
+    Write-Output "Group Assigned"
+
+    $Result = @{
+        Status = "Success"
+        UserId = $User.Id
+        UPN    = $User.UserPrincipalName
+    }
+
+    $Result | ConvertTo-Json
+
+}
+catch {
+
+    $ErrorResult = @{
+        Status = "Failed"
+        Error  = $_.Exception.Message
+    }
+
+    $ErrorResult | ConvertTo-Json
+}
